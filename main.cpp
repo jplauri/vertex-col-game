@@ -2,6 +2,7 @@
 #include "tests.hpp"
 #include "vertex_coloring.hpp"
 #include "minimax.hpp"
+#include "common.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -14,9 +15,10 @@
 
 void print_gameplay(std::pair<Victory, std::queue<move>>& game);
 
-void verify_g6_batch(const std::string& file);
+void verify_g6_batch(const std::string& file, bool verbose = true);
 
 const std::unordered_map<std::string, std::pair<int, int>> allowed_types = {
+	{"planar", {4, 11}},
 	{"outerplanar", {4, 11}}
 };
 
@@ -100,12 +102,19 @@ void print_gameplay(std::pair<Victory, std::queue<move>>& game) {
 		std::cout << "Bob WINS!\n";
 }
 
-void verify_g6_batch(const std::string& file) {
+void verify_g6_batch(const std::string& file, bool verbose) {
 	std::ifstream ofs(file);
 	std::string line;
 
+	const int num_graphs = get_line_count(file);
+	int curr_graph = 1;
+
 	while (std::getline(ofs, line)) {
 		graph g = read_graph6(line);
+
+		if (verbose) {
+			std::cerr << "Processing graph " << curr_graph << " / " << num_graphs << " ...\n";
+		}
 
 		int num_cols = 0;
 		Victory win = Victory::Bob;
@@ -116,6 +125,7 @@ void verify_g6_batch(const std::string& file) {
 		} while (win != Victory::Alice);
 
 		std::cout << line << " " << num_cols << "\n";
+		++curr_graph;
 	}
 }
 
