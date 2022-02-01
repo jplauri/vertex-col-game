@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <bitset>
+#include <chrono>
 
 namespace {
 	// A 4-cycle with a chord and a pendant
@@ -64,6 +65,33 @@ void test_graph() {
 			assert(g.num_edges() == i);
 		}
 	}
+
+	{
+		graph g = get_complete_graph(3);
+
+		assert(has_triangle(g));
+		assert(!has_k_four(g));
+
+		for (auto i = 4; i < 10; ++i) {
+			graph h = get_complete_graph(i);
+			assert(has_triangle(h) && has_k_four(h));
+		}
+	}
+
+	{
+		for (auto i = 4; i < 10; ++i) {
+			graph g = get_cycle(i);
+			assert(!has_triangle(g) && !has_k_four(g));
+
+			graph h = get_star(i);
+			assert(!has_triangle(h) && !has_k_four(h));
+		}
+
+		// A graph on 27 vertices with clique number 4
+		graph g = read_graph6("Z???O__O?G??????cCA?_A_?P???ECGOA?G@?hI?oGW_bQS_PPjW@{D~}?Jw");
+		assert(has_triangle(g) && has_k_four(g));
+	}
+
 	std::cout << "OK\n";
 }
 
@@ -125,11 +153,6 @@ void test_full_coloring() {
 
 	col.uncolor_vertex(0, 0);
 	assert(!col.is_colored());
-
-	std::vector<index_t> zero_cols;
-	get_bit_positions(col.get_allowed_colors(0), std::back_inserter(zero_cols));
-
-	assert(zero_cols.size() == 1 && zero_cols[0] == 0);
 
 	col.color_vertex(0, 0);
 	assert(col.is_colored());
@@ -340,6 +363,61 @@ void test_minimax() {
 			auto gameplay = play_optimally(g, NUM_COLS);
 			assert(gameplay.first == Victory::Alice);
 		}
+	}
+
+	{
+		// The 4-cycle requires 3 colors for Alice to win
+		graph g = get_cycle(4);
+
+		const int NUM_COLS = 2;
+
+		auto gameplay = play_optimally(g, 2);
+		assert(gameplay.first == Victory::Bob);
+
+		gameplay = play_optimally(g, 3);
+		assert(gameplay.first == Victory::Alice);
+	}
+
+	{
+		// TODO: is this not 3-colorable for Alice?
+		graph g = read_graph6("G?AFCs");
+
+		const int NUM_COLS = 4;
+		vertex_coloring col(g, NUM_COLS);
+
+		auto gameplay = play_optimally(g, NUM_COLS);
+		assert(gameplay.first == Victory::Alice);
+	}
+
+	{
+		// The graph has 8 vertices and can be partitioned into n/2 = 4 
+		// 2-sets each of which is independent and dominating. Thus,
+		// we can prove that \chi_g(G) is at least 5.
+		graph g = read_graph6("GQz~vk");
+
+		const int NUM_COLS = 5;
+		vertex_coloring col(g, NUM_COLS);
+
+		auto gameplay = play_optimally(g, NUM_COLS);
+
+		assert(gameplay.first == Victory::Alice);
+	}
+
+	{
+		const auto t1 = std::chrono::high_resolution_clock::now();
+
+		// H?AADrq for 4 colors: 4.64s 4.59s 4.58s
+		// AB-pruning (for 3 colors) -> 1.34s
+		graph g = read_graph6("H?AADrq");
+
+		const int NUM_COLS = 3;
+		vertex_coloring col(g, NUM_COLS);
+
+		auto gameplay = play_optimally(g, NUM_COLS);
+		assert(gameplay.first == Victory::Alice);
+
+		const auto t2 = std::chrono::high_resolution_clock::now();
+		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() / 1000.0 << "s \n";
 	}
 
 	std::cout << "OK\n";
