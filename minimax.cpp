@@ -21,15 +21,28 @@ std::pair<move, int> minimax(game_state& node, bool max_player, int alpha, int b
 
 	// For each child node
 	index_t uncols = node.uncols_;
+#if defined(_MSC_VER)
 	for (unsigned long v; uncols != 0; uncols &= ~(1ULL << v)) {
 		_BitScanForward64(&v, uncols);
+#elif defined(__GNUC__)
+	for (uncols != 0) {
+		const auto v = __builtin_ctzll(uncols);
+		const auto lb = uncols & -uncols;
+		uncols ^= lb;
+#endif
 		index_t col = node.col_.get_allowed_colors(v);
 
+#if defined(_MSC_VER)
 		for (unsigned long j; col != 0; col &= ~(1ULL << j))
 		{
 			// Now, (v, j) is a child node to consider
 			_BitScanForward64(&j, col);
-
+#elif defined(__GNUC__)
+		while(col != 0) {
+			const auto j = __builtin_ctzll(col);
+			const auto lb_z = col & -col;
+			col ^= lb_z;
+#endif
 			node.col_.color_vertex(v, j);
 			node.remove(v);
 
