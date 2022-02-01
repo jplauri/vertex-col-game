@@ -19,15 +19,9 @@ static constexpr index_t BINOMIAL[64] = {
 };
 
 
-template <typename OutputIterator>
-void get_bit_positions(index_t x, OutputIterator out) {
-	for (unsigned long j; x != 0; x &= ~(1ULL << j))
-	{
-		_BitScanForward64(&j, x);
-		*out = j;
-	}
-}
 
 [[nodiscard]] int get_line_count(const std::string& file);
+
+bool next_combination(index_t* c, index_t n, index_t k);
 
 #endif
