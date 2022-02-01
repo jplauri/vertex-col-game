@@ -177,7 +177,7 @@ void vertex_coloring::attack_neighbors(index_t adj, index_t c) {
 #elif defined(__GNUC__)
 	while (adj != 0) {
 		const auto j = __builtin_ctzll(adj);
-		const auto lb = tmp & -tmp;
+		const auto lb = adj & -adj;
 		adj ^= lb;
 
 		++attack_[j][c];
@@ -195,7 +195,7 @@ void vertex_coloring::free_neighbors(index_t adj, index_t c) {
 #elif defined(__GNUC__)
 	while (adj != 0) {
 		const auto j = __builtin_ctzll(adj);
-		const auto lb = tmp & -tmp;
+		const auto lb = adj & -adj;
 		adj ^= lb;
 
 		--attack_[j][c];
