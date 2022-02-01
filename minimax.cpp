@@ -25,7 +25,7 @@ std::pair<move, int> minimax(game_state& node, bool max_player, int alpha, int b
 	for (unsigned long v; uncols != 0; uncols &= ~(1ULL << v)) {
 		_BitScanForward64(&v, uncols);
 #elif defined(__GNUC__)
-	for (uncols != 0) {
+	while (uncols != 0) {
 		const auto v = __builtin_ctzll(uncols);
 		const auto lb = uncols & -uncols;
 		uncols ^= lb;
