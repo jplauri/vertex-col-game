@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <bit>
+#include <numeric>
 
 namespace {
 	static constexpr int BIAS6 = 63;
@@ -67,20 +68,53 @@ index_t graph::get_neighbors(index_t u) const {
 	return adj_[u];
 }
 
-void graph::print() const {
-	std::cout << "n = " << num_vertices() << ", m = " << num_edges() << "\n";
+bool graph::has_edge(index_t u, index_t v) const {
+	assert(u >= 0 &&
+		v >= 0 &&
+		u != v &&
+		u < adj_.size() &&
+		v < adj_.size());
 
-	for (index_t i = 0; i < num_vertices(); ++i) {
-		std::cout << i << ": ";
-		index_t adj = get_neighbors(i);
+	return (adj_[u] >> v) & 1ULL;
+}
 
-		for (unsigned long j; adj != 0; adj &= ~(1ULL << j))
-		{
-			_BitScanForward64(&j, adj);
-			std::cout << j << " ";
-		}
-		std::cout << "\n";
+bool has_triangle(const graph& g) {
+	if (g.num_vertices() < 3 || g.num_edges() < 3) {
+		return false;
 	}
+
+	std::vector<index_t> idx = { 0, 1, 2 };
+
+	do {
+		if (g.has_edge(idx[0], idx[1]) && g.has_edge(idx[0], idx[2]) && g.has_edge(idx[1], idx[2])) {
+			return true;
+		}
+	} while (next_combination(idx.data(), g.num_vertices(), 3));
+
+	return false;
+}
+
+bool has_k_four(const graph& g) {
+	if (g.num_vertices() < 4 || g.num_edges() < 6) {
+		return false;
+	}
+
+	std::vector<index_t> idx = { 0, 1, 2, 3 };
+
+	do {
+		if (
+			g.has_edge(idx[0], idx[1]) && 
+			g.has_edge(idx[0], idx[2]) && 
+			g.has_edge(idx[0], idx[3]) &&
+			g.has_edge(idx[1], idx[2]) &&
+			g.has_edge(idx[1], idx[3]) &&
+			g.has_edge(idx[2], idx[3]))
+		{
+			return true;
+		}
+	} while (next_combination(idx.data(), g.num_vertices(), 4));
+
+	return false;
 }
 
 graph read_graph6(const std::string& s) {

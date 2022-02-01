@@ -22,12 +22,16 @@ class graph {
 
 	index_t get_neighbors(index_t u) const;
 
-	void print() const;
+	bool has_edge(index_t u, index_t v) const;
 
   private:
 	std::vector<index_t> adj_;
 	int m_{ 0 };
 };
+
+bool has_triangle(const graph& g);
+
+bool has_k_four(const graph& g);
 
 graph read_graph6(const std::string& s);
 
